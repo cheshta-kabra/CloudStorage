@@ -1,33 +1,36 @@
-import shutil
 import os
 import dropbox
-path=input('enter the path of the folder to be sorted')
-listoffiles=os.listdir(path)
-for file in listoffiles:
-        name,ext=os.path.splitext(file)
-        ext=ext[1:]
-        if ext=='':
-            continue
-        if os.path.exists(path+'/'+ext):
-            shutil.move(path+'/'+file,path+'/'+ext+'/'+file)
-        else:
-            os.mkdir(path+'/'+ext)
-            shutil.move(path+'/'+file,path+'/'+ext+'/'+file)
-class TransferData:
-    def __init__(self,accessTocken):
-        self.accessTocken=accessTocken
-    def uplodFile(self,filefrom,fileto):
-        dbx=dropbox.Dropbox(self.accessTocken)
-        with open(filefrom,'rb')as f:
-            dbx.files_upload(f.read(),fileto)
-def main():
-    accessTocken='16MdDNmUwUYAAAAAAAAAAdNG2KtcEtAsrsOjGHdzLFePzld34Xy4yq4Uv4jfvgm9'
-    transferData=TransferData(accessTocken)
-    filefrom=path
-    fileto=/storage
-    transferData.uplodFile(filefrom,fileto)
-    print('File Uploded!')
+from dropbox.files import WriteMode
 
+class TransferData:
+    def __init__(self,access_token):
+        self.access_token =  access_token
+
+    def upload_file(self, file_from, file_to):
+        dbx = dropbox.Dropbox(self.access_token)
+
+            
+        for root, dirs, files in os.walk(file_from):
+
+            for filename in files:
+                    
+                local_path = os.path.join(root, filename)
+
+                    
+                relative_path = os.path.relpath(local_path, file_from)
+                dropbox_path = os.path.join(file_to, relative_path)
+                   
+                with open(local_path, 'rb') as f:
+                    dbx.files_upload(f.read(), dropbox_path, mode=WriteMode('overwrite'))
+
+def main():
+    access_token = '16MdDNmUwUYAAAAAAAAAAdNG2KtcEtAsrsOjGHdzLFePzld34Xy4yq4Uv4jfvgm9'
+    transferData = TransferData(access_token)
+
+    file_from = str(input("Enter the folder path to transfer : -"))
+    file_to = input("enter the full path to upload to dropbox:- ")  
+    transferData.upload_file(file_from,file_to)
+    print("file has been moved !!!")
 main()
 
 
